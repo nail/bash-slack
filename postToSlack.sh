@@ -3,15 +3,20 @@
 function usage {
     programName=$0
     echo "description: use this program to post messages to Slack channel"
-    echo "usage: $programName [-t \"sample title\"] [-b \"message body\"] [-c \"mychannel\"] [-u \"slack url\"]"
+    echo "usage: $programName <-t \"sample title\"> <-b \"message body\"> <-c \"mychannel\"> <-u \"slack url\"> [-n \"username\"] [-i \"icon\"]"
     echo "	-t    the title of the message you are posting"
     echo "	-b    The message body"
     echo "	-c    The channel you are posting to"
     echo "	-u    The slack hook url to post to"
+    echo "	-n    The username"
+    echo "	-i    The emoji icon to use"
     exit 1
 }
 
-while getopts ":t:b:c:u:h" opt; do
+userName=$(hostname)
+icon=sunglasses
+
+while getopts ":t:b:c:u:n:i:h" opt; do
   case ${opt} in
     t) msgTitle="$OPTARG"
     ;;
@@ -21,6 +26,10 @@ while getopts ":t:b:c:u:h" opt; do
     ;;
     c) channelName="$OPTARG"
     ;;
+    n) userName="$OPTARG"
+    ;;
+    i) icon="$OPTARG"
+    ;;
     h) usage
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
@@ -29,15 +38,17 @@ while getopts ":t:b:c:u:h" opt; do
 done
 
 if [[ ! "${msgTitle}" ||  ! "${slackUrl}" || ! "${msgBody}" || ! "${channelName}" ]]; then
-    echo "all arguments are required"
+    echo "The title, body, channel and hook URL are required"
     usage
 fi
+
+
 
 read -d '' payLoad << EOF
 {
         "channel": "#${channelName}",
-        "username": "$(hostname)",
-        "icon_emoji": ":sunglasses:",
+        "username": "${userName}",
+        "icon_emoji": ":${icon}:",
         "attachments": [
             {
                 "fallback": "${msgTitle}",
